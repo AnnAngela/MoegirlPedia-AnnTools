@@ -1,0 +1,52 @@
+{
+    "env": {
+        "browser": true,
+        "es6": true,
+        "node": true
+    },
+    "extends": "eslint:recommended",
+    "rules": {
+        "indent": [
+            2,
+            4,
+            {
+                "SwitchCase": 1
+            }
+        ],
+        "linebreak-style": [
+            0,
+            "windows"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ],
+        "no-console": [
+            0
+        ],
+        "no-unused-vars": [
+            1
+        ],
+        "no-redeclare": [
+            1
+        ],
+        "no-unreachable": [
+            1
+        ],
+        "no-inner-declarations": [
+            0
+        ],
+        "comma-dangle": [
+            1,
+            "always-multiline"
+        ]
+    },
+    "globals": {
+        "mw": true,
+        "$": true,
+        "mediaWiki": true,
+        "jQuery": true,
+        "markdown": true,
+        "AnnTools": true
+    }
+}
