@@ -1,5 +1,9 @@
 'use strict';
 if (window.AnnTools && window.AnnTools.core) throw new Error('class AnnToolsNetwork: 未加载核心类');
+/**
+ * @private
+ * @class AnnToolsJQuertExtend
+ */
 class AnnToolsJQuertExtend {
     constructor(core) {
         if (core.devmodeOn) console.debug("AnnToolsJQuertExtend类初始化中……");

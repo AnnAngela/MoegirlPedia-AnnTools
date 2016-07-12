@@ -53,10 +53,10 @@ class AnnToolsCore {
             global,
             inited: false,
             devmodeOn: localStorage.getItem('AnnTools-global-devmodeOn') === 'true',
-            registry: {},
             hookList: [],
             UNDEFINED_PARAMETER: window.Symbol ? Symbol('AnnToolsCore.UNDEFINED_PARAMETER') : undefined,
         });
+        if ($.isPlainObject(this.registry)) this.registry = {};
         if (mw.config.values.wgUserGroups.includes('sysop') || mw.config.values.wgUserGroups.includes('patroller')) this.init();
     }
     /**
@@ -136,14 +136,12 @@ class AnnToolsCore {
     }
     /**
      * 获得参数传入的库
+     * @private
      * @param {(String|Array)} list - list指定一个需要加载的库的列表，以数组形式列出，如果只需加载一个库也可以直接传入库的名称
      */
     require(list) {
         const self = this;
         if (typeof list === 'string') list = [list];
-        list.forEach(function (n) {
-            this.registry[n].stage = 'loading';
-        });
         return Promise.all(list.map(l => new Promise(function (res, rej) {
             $('script')
                 .on({
@@ -154,29 +152,21 @@ class AnnToolsCore {
                 .appendTo('head');
         }).fail(function () {
             self.error('core.require', `加载${l}库失败。`);
-            self.registry[l].stage = 'fail';
         }).catch(function (e) {
             self.error('core.require', `加载${l}库错误(${e.message})`);
-            self.registry[l].stage = 'error';
         })))
             .then(this.checkHookList);
     }
     /**
      * 初始化工具的基础部件
+     * @private
      * @param {Number} [index=0] - index指明初始化部件的当前加载阶段，为空则表明是第一阶段，i+1为阶段数
      */
     init(index = 0) {
         let libgroup = this.getGlobalConfig('libraries')[index];
         if (this.inited) this.error('core.init', '核心类已初始化。');
         else if (!libgroup) this.inited = true;
-        else libgroup.forEach(function (n) {
-            this.register({
-                name: n,
-                version: this.version,
-                dependencies: index ? this.getGlobalConfig('libraries').slice(0, index) : [],
-                module: null,
-            });
-        });
+        else this.require(libgroup);
     }
     //TODO: registry/register
     register({
@@ -185,16 +175,16 @@ class AnnToolsCore {
         dependencies,
         module,
     }) {
-        if (this.registry[name] && this.registry[name].module === module) return this.error('core.register', `${name}库重复注册。`);
+        if (this.registry[name]) return this.error('core.register', `${name}库重复注册。`);
         let path = name.toLowerFirstCase();
         Object.assign(this.registry, {
-            name: {
+            [name]: {
                 path,
                 version,
                 dependencies,
                 module,
                 stage: 'unload',
-            }
+            },
         });
         this.addHook(name);
     }
@@ -211,12 +201,15 @@ class AnnToolsCore {
             }
         else delete lib.dependencies;
         if (lib.stage === 'pending') this.hookList.push(lib);
-        else if (lib.module) {
-            this.global[lib.path] = new lib.module(this);
-            lib.stage = 'loaded';
-            this.checkHookList();
+        else {
+            try {
+                this.global[lib.path] = new lib.module(this, ...lib.dependencies.map(n => this.global[this.registry[n].path]));
+                lib.stage = 'loaded';
+                this.checkHookList();
+            } catch (e) {
+                this.error('core.addHook', `注册的库${lib.name}传入了个错误的module。`);
+            }
         }
-        else this.require(lib.name);
     }
     checkHookList() {
         if (!this.hookList[0]) return;
@@ -228,7 +221,7 @@ class AnnToolsCore {
             }, this);
             if (!flag) return;
             if (lib.module) {
-                this.global[lib.path] = new lib.module(this);
+                this.global[lib.path] = new lib.module(this, ...lib.dependencies.map(n => this.global[this.registry[n].path]));
                 lib.stage = 'loaded';
                 gFlag = true;
             }

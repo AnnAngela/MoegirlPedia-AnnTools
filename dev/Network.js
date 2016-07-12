@@ -35,8 +35,8 @@ class AnnToolsNetwork {
      * @returns {AnnToolsNetworkError} 返回AnnToolsNetworkError类实例以说明错误信息
      */
     error(stage, type, error, message, callback) {
-        if (typeof callback !== 'function') callback = undefined;
-        if (typeof message === 'function') {
+        if ($.isFunction(callback)) callback = undefined;
+        if ($.isFunction(message)) {
             callback = message;
         }
         if (typeof message !== 'string') message = undefined;
@@ -128,8 +128,8 @@ class AnnToolsNetwork {
         if (!["text/x-wiki", "text/javascript", "application/json", "text/css", "text/plain"].includes(opt.contentformat)) delete opt.contentformat;
         if (!["wikitext", "javascript", "json", "css", "text", "Scribunto", "JsonSchema"].includes(opt.contentmodel)) delete opt.contentmodel;
         if (!["watch", "unwatch", "preferences", "nochange"].includes(opt.watchlist)) delete opt.watchlist;
-        if (typeof opt.minor !== 'boolean') delete opt.minor;
-        if (typeof opt.bot !== 'boolean') delete opt.bot;
+        if (opt.minor === !!opt.minor) delete opt.minor;
+        if (opt.bot === !!opt.bot) delete opt.bot;
         return this.getToken().then(function (token) {
             opt.token = token;
             return new Promise(function (res, rej) {
@@ -173,9 +173,9 @@ class AnnToolsNetwork {
                 format: "json",
             });
         if (!["watch", "unwatch", "preferences", "nochange"].includes(opt.watchlist)) delete opt.watchlist;
-        if (typeof opt.movetalk !== 'boolean') delete opt.movetalk;
-        if (typeof opt.noredirect !== 'boolean') delete opt.noredirect;
-        if (typeof opt.ignorewarning !== 'boolean') delete opt.ignorewarning;
+        if (opt.movetalk === !!opt.movetalk) delete opt.movetalk;
+        if (opt.noredirect === !!opt.noredirect) delete opt.noredirect;
+        if (opt.ignorewarning === !!opt.ignorewarning) delete opt.ignorewarning;
         return this.getToken().then(function (token) {
             opt.token = token;
             return new Promise(function (res, rej) {
