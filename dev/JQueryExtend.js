@@ -21,6 +21,9 @@ class AnnToolsJQuertExtend {
                     if ($(this).is('input,button')) this.disabled = false;
                 });
             },
+            matchTime() {
+                return this.text().match(/(\d{4}年\d{1,2}月\d{1,2}日 \([一二三四五六日]\) \d{2}:\d{2} \([A-Z]{3}\))/g);
+            }
         });
     }
 }
